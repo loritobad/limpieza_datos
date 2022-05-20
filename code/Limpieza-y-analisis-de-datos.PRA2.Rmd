@@ -1,0 +1,460 @@
+---
+title: Tipología y Ciclo de Vida de los Datos - aula 1
+subtitle: Práctica 2- Limpieza y análisis de datos
+author: "Alumnos: Enrique J.Villalobos Torregrosa y F.Javier Albarrán González - Profesor: Diego Pérez" 
+date: "Mayo 2022"
+output:
+  pdf_document:
+    highlight: default
+    toc: yes
+    toc_depth: 3
+  html_document:
+    highlight: default
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_depth: 3
+  word_document: default
+---
+
+<!--Header-->
+<div class="row" style="background: #0fccf2;padding: 10px 20px;"></div>
+
+# Descripción de la práctica
+
+El objetivo de esta actividad será el tratamiento de un dataset, que puede ser el creado en la práctica 1 o bien cualquier dataset libre disponible en Kaggle (https://www.kaggle.com).
+
+Algunos ejemplos de dataset con los que podéis trabajar son:
+
+- Red Wine Quality (https://www.kaggle.com/uciml/red-wine-quality-cortez-et-al-2009)
+- Titanic: Machine Learning from Disaster (https://www.kaggle.com/c/titanic)
+
+El último ejemplo corresponde a una competición activa de Kaggle de manera que, opcionalmente, podéis aprovechar el trabajo realizado durante la práctica para entrar en esta competición.
+
+**Importante**: si se elige un dataset diferente de los propuestos es importante que este contenga una amplia variedad de datos numéricos y categóricos para poder realizar un análisis más rico y poder responder a las diferentes preguntas planteadas en el enunciado de la práctica.
+  
+Siguiendo las principales etapas de un proyecto analítico, las diferentes tareas a realizar (y **justificar**) son las siguientes:
+
+1. Descripción del dataset. ¿Por qué es importante y qué pregunta/problema pretende responder?
+2. Integración y selección de los datos de interés a analizar. Puede ser el resultado de adicionar diferentes datasets o una subselección útil de los datos originales, en base al objetivo que se quiera conseguir.
+3. Limpieza de los datos.
+3.1. ¿Los datos contienen ceros o elementos vacíos? Gestiona cada uno de estos casos.
+3.2. Identifica y gestiona los valores extremos. 
+4. Análisis de los datos.
+- 4.1. Selección de los grupos de datos que se quieren analizar/comparar (p. e., si se van a comparar grupos de datos, ¿cuáles son estos grupos y qué tipo de análisis se van a aplicar?)
+- 4.2. Comprobación de la normalidad y homogeneidad de la varianza.
+- 4.3. Aplicación de pruebas estadísticas para comparar los grupos de datos. En función de los datos y el objetivo del estudio, aplicar pruebas de contraste de hipótesis, correlaciones, regresiones, etc. Aplicar al menos tres métodos de análisis diferentes.
+5. Representación de los resultados a partir de tablas y gráficas. Este apartado se puede responder a lo largo de la práctica, sin necesidad de concentrar todas las representaciones en este punto de la práctica.
+6. Resolución del problema. A partir de los resultados obtenidos, ¿cuáles son las conclusiones? ¿Los resultados permiten responder al problema?
+7. Código: Hay que adjuntar el código, preferiblemente en R, con el que se ha realizado la limpieza, análisis y representación de los datos. Si lo preferís, también podéis trabajar en Python.  
+
+
+# Resolución
+
+## Descripción del dataset
+
+El conjunto de datos elegido es el correspondiente a la calidad del vino del link del kaggle propuesto.
+Se accede a él en la siguiente url:
+<center>
+https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009
+</center>
+
+Contiene las caracterísiticas fisicoquímicas y sensoriales de 1599 vinos portugueses. Las características o atributos son los siguientes:
+
+
+- **Características físicoquímicas**:
+
+1. *fixed.acidity* - la mayoría de los ácidos involucrados con el vino o fijos o no volátiles (no se evaporan fácilmente).
+2. *volatile.acidity* - la cantidad de ácido acético en el vino, que en niveles demasiado altos puede provocar un sabor desagradable a vinagre.
+3. *citric.acid* - presente en pequeñas cantidades, el ácido cítrico puede añadir 'frescura' y sabor a los vinos.
+4. *residual sugar* - la cantidad de azúcar que queda después de que se detiene la fermentación, es raro encontrar vinos con menos de 1 gramo/litro y vinos con más de 45 gramos/litro se consideran dulces.
+5. *chlorides* - la cantidad de sal en el vino.
+6. *free.sulfur.dioxide* - la forma libre de SO2 existe en equilibrio entre el SO2 molecular (como gas disuelto) y el ion bisulfito; previene el crecimiento microbiano y la oxidación del vino.
+7. *total.sulfur.dioxide* - cantidad de formas libres y ligadas de S02; en bajas concentraciones, el SO2 es mayormente indetectable en el vino, pero en concentraciones de SO2 libres superiores a 50 ppm, el SO2 se vuelve evidente en la nariz y el sabor del vino.
+8. *density* - la densidad del agua es cercana a la del agua dependiendo del porcentaje de contenido de alcohol y azúcar.
+9. *pH* - describe qué tan ácido o básico es un vino en una escala de 0 (muy ácido) a 14 (muy base); la mayoría de los vinos están entre 3 y 4 en la escala de pH.
+10. *sulphates* - un aditivo del vino que puede contribuir a los niveles de dióxido de azufre (S02), que actúa como antimicrobiano y antioxidante.
+11. *alcohol* - el porcentaje de contenido de alcohol del vino.
+
+- **Características sensoriales:** 
+
+12. *quality* - variable de salida/objetivo, calidad, que ofrece una puntuación a cada instancia de vino, basada en datos sensoriales. Puntuación entre 0 y 10.
+
+
+
+## Importancia del dataset
+
+Estamos ante un conjunto de datos de amplia difusión en el mundo de *Ciencia de Datos*, comparable al conjunto de datos de la *flor iris*, utilizado en múltiples ocasiones a modo de ejemplo por la versatilidad de sus datos y el ámplio abanico de cuestiones que se pueden plantear sobre su contenido.
+
+El dataset "Red Wine Quality" está ámpliamente difundido y es conocido por quienes se dedican al estudio de los datos o quieren dedicarse a ello. Permite plantear problemas tanto de clasificación como de regresión, que pueden tener relevancia en el sector vinícola.
+
+Pero más allá del uso de estos datos en el mundo académico de la *Ciencia de Datos*, si entramos en el significado de los datos que proporciona, podemos extraer conocimiento sobre los compuestos de los vinos para tratar de mejorar su composición y su calidad. De ahí que pueda aportar valor a bodegas y otros productores de vino similar al del dataset. 
+
+Puede servir, también, de referencia para validar las puntuaciones de catadores y puede servir a éstos a entrenar su olfato y paladar para detectar los mejores vinos.
+
+En definitiva, que nos podría ofrecer la posibilidad de "fusionar", con modelos basados en datos objetivos, el mundo físico del vino y sus características con el mundo sensorial y subjetivo de los profesionales del sector.
+
+
+## Preguntas a responder
+
+La problemática que nos planteamos resolver es, por una parte, clasificar un tipo de vino dado en función de sus atributos físicos, y por otro, poder anticiparnos al estudio sensorial y poder ofrecer una estimación sobre la calidad.
+
+## Integración y selección de datos
+
+Para nuestro estudio vamos a trabajar con todos los datos que se facilitan en el dataset. Sin conocer como pueden afectar los distintos compuestos químicos a la calidad, o incluso, cómo pueden interactuar entre ellos, nos parece arriesgado eliminar características a priori.
+
+Del mismo modo trabajaremos con todas las instancias del dataset, salvo que se tenga que eliminar algún registro, ya sea porque no contenga información relevante o porque tenga un elevado número de nulos.
+
+En este sentido, a lo largo de los puntos siguientes, procederemos a la limpieza del conjunto de datos, al análisis de valores atípicos (*outliers*) y su tratamiento si procediera, para continuar con el estudio univariante de los atributos a través de la visualización de sus distribuciones/histogramas, estudio bivariante de algún datos con respecto al atributo *quality*, y finalmente, estudiar las correlaciones entre los datos. 
+
+## Limpieza de datos
+
+En primer lugar procedemos con la carga de librerías y la lectura del conjunto de datos.
+
+```{r message=FALSE, warning=FALSE}
+library(corrplot)
+library(VIM)
+library(ggplot2)
+library(scales)
+library(ggridges)
+library (caret)
+library(dplyr)
+library(randomForest)
+library(gmodels)
+library(ResourceSelection)
+library(pROC)
+```
+
+```{r}
+df <- read.csv("winequality-red.csv") 
+print(dim(df))
+str(df)
+```
+
+Una vez observada la naturaleza de los datos veamos si existen elementos vacíos que puedan afectar a los resultados del análisis posterior.  
+
+
+```{r}
+NaNs <- apply(X = is.na(df), MARGIN = 2, FUN = sum)
+NaNs
+
+aggr(df, numbers=TRUE, sortVars=TRUE, labels=names(df),
+cex.axis=.7, gap=3, ylab=c("Valores Pérdidos","Patrón"))
+```
+
+
+Podemos apreciar que ninguna variable presenta valores faltantes (*NAs*). En cuanto a las variables con valores 0, observamos que la variable **citric.acid** es la única que tiene valores de 0. Tras las investigaciones efectuadas (https://uvadoc.uva.es/bitstream/handle/10324/41131/TFM-L492.pdf?sequence=1), se ha acordado que el valor 0 esta dentro del dominio del atributo.
+
+```{r}
+df_0 <- Filter(function(x) sum(x == 0) > 0, df)
+head(sort(df_0$citric.acid, decreasing = F, na.last = TRUE),132)
+
+```
+
+Veamos ahora si existen valores extremos (*outliers*), para ello usaremos un boxplot.  
+
+
+```{r}
+ggplot(stack(df), aes(x = ind, y = values)) +
+  geom_boxplot(col=rainbow(12))+
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+
+Observamos que las variables han sido medidas en diferentes escalas lo que influye en la gráfica. Para corregir el efecto de la escala vamos a normalizar el conjunto de datos, escalando entre 0 y 1 todos los valores, pero respetando las distribuciones, y volver a graficarlo.
+```{r}
+minMax <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+
+df_norm <- as.data.frame(lapply(df, minMax))
+
+ggplot(stack(df_norm),  aes(x = ind, y = values)) +
+  geom_boxplot(col=rainbow(12))+
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+
+Apreciamos la existencia de un buen número de valores extremos, que no necesariamente deben considerarse como atípicos o anómalos. Lo que sí parece cierto es que cada vino posee valores muy diferentes de los atributos en estudio y que, en principio, todos ellos contribuyen a determinar la calidad final del producto. 
+
+Pongamos un ejemplo. El *pH*.
+
+```{r}
+summary(df$pH)
+```
+Investigando el dato, los valores aceptable para una calidad óptima, varían entre 3.1 y 3.9 
+(https://www.valtea.es/que-es-la-acidez-en-un-vino-y-que-importancia-tiene/#:~:text=La%20acidez%20total%20del%20vino,que%20su%20calidad%20sea%20%C3%B3ptima.). Sin embargo, entre los vinos en estudio, tenemos vinos con pésima calidad, por lo que es muy probable que su pH se encuentre también fuera de rango. No podemos considerar estos valores como anómalos por un proceso de captura de datos erroneo y eliminarlos sin perder información que puede ser útil a nivel de conjunto para identificar vinos de inferior calidad.
+
+El mismo razonamiento aplicamos al resto de atributos.
+
+El de recibo mencionar que lo mismo sucede con la variable target *quality*. Su distribución se centra en los valores medios, pero existen vinos excepcionales, con las puntuaciones más altas, que en ningún caso pueden ser considerados atípicos o *outliers* al uso. Por lo tanto, mantenemos en el dataset todos estos valores sin hacer tratamientos o borrados de los mismos, dada su posible relevancia en el resultado final.
+
+
+## Análisis de los datos
+
+Vamos a comprobar el grado de correlación existente entre los datos para ver si podemos sacar alguna conclusión o simplificar la información del dataset que finalmente acabemos pasando a los algoritmos de minería que vayamos a utilizar.
+
+```{r}
+
+matriz <- round(cor(df, use = "complete.obs"),1)
+corrplot.mixed(matriz)
+#knitr::kable(matriz)
+
+```
+
+Apreciamos fuertes correlaciones de *fixed.acidity* con *density* (0.7), *citric.acid* (0.7) y con *ph* (-0.7), en este último caso, negativa. Podemos proceder a eliminar "fixed acidity" ya que comparte información con las otras tres. Es decir, explica sustancialmente la variabilidad de cada una de las otras y podría ser contraproducente mantener todas. Podríamos optar por eliminar las otras tres en lugar de *fixed.acidity*, pero consideramos que perderíamos mucha información, además de existir una correlación negativa con *ph* (a más acidez fija, menor ph - recordemos que valores menores de 7 indican acidez) que pensamos es importante mantener por su interacción con otros datos y afectación en los modelos.
+
+Igual de fuerte es la correlación entre *free.sulfur.dioxide* con *total.sulfur.dioxide* (0.7). Entendemos que la primera es un subconjunto particular del segundo, lo cual explicaría esta correlación, y por lo tanto, vamos a eliminarla también del dataset para simplificar el modelo.
+
+Existen otras correlaciones relativamente considerables, como *volatile.acidity* con *citric.acid* (-0.6) o la llamativa entre *alcohol* y *quality* (0.5) que nos indica que a más alcohol, más calidad. Por un principio de cautela, vamos a mantener estas variables.
+
+```{r}
+eliminar <- c(1,6)
+df2 <- df[, -eliminar]
+colnames(df2)
+```
+
+### Normalidad y homocedasticidad de los datos
+
+De manera visual vamos a proceder a examinar si los datos se acomodan a una distribución normal para poder elegir los estimadores oportunos en caso de necesitarlos para hacer **hipótesis de contraste**.
+
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:ncol(df2)) {
+  if (is.numeric(df2[,i])){
+    qqnorm(df2[,i],main = paste("Normal Q-Q ",colnames(df2)[i]))
+    qqline(df2[,i],col="red")
+    hist(df2[,i],main=paste("Histogram ", colnames(df2)[i]),xlab=colnames(df2)[i],
+         freq =FALSE)
+  }
+}
+```
+
+
+En general parece que los datos siguen la normal, pero no tenemos una certeza plena si lo trasladamos a la población. Aplicaremos el text de normalidad de *Shapiro Wilk* para comprobarlo. Este test trabaja con la **hipótesis nula** de normalidad poblacional de los datos. En caso de que el p-value sea mayor a 0.05 (nivel de significancia estándar), se acepta dicha hipótesis.
+
+```{r}
+col.names = colnames(df2)
+for(i in 1:ncol(df2)) {
+  a <- shapiro.test(df2[,i])
+  if (a[2] < 0.05){
+    print(paste("atributo ", col.names[i], "p-value", a[2]))
+    }
+  }
+```
+
+
+El resultado es demoledor. Ningún dato sigue una distribución normal. Si embargo, al tratarse de una muestra lo suficientemente grande, se puede asumir, por el *teorma del límite central* que siguen una distribución normal.
+
+
+Puesto que los datos no siguen una Normal, tendremos que aplicar ahora, para comprobar la **homocedasticidad** de los datos, el text de *Fligner-Killeen*. Este test asume como hipótesis nula la igualdad de las varianzas.
+
+Lo haremos entre los datos calidad (nuestra variable "target") y cantidad de alcochol, que habíamos visto que tienen un grado medio de correlación.
+
+```{r}
+fligner.test(quality ~ alcohol, data = df2)
+```
+
+Tenemos que rechazar la hipótesis nula, asumiendo que tienen varianzas diferentes estos dos atributos.
+
+## Análisis bivariante (frente a variable objetivo) de algún atributo
+
+
+Puesto que nos ha resultado llamativa la relación entre alcohol y calidad vamos a ver como se reparten los distintos caldos entre estos dos campos.
+
+
+```{r}
+df2$quality <-as.factor(df2$quality)
+
+ggplot(df2, aes(x = alcohol, y = quality, fill = ..x..)) +
+  geom_density_ridges_gradient(scale = .9, gradient_lwd = .5, color = "black") +
+  scale_fill_viridis_c(option = "plasma", name = "") +
+  labs(x = "Nivel de alcohol", y = "Calidad") #+ 
+  #theme_ridges(font_family = "Roboto Condensed", grid = FALSE)
+```
+
+Apreciamos como los vinos con calidad inferior se "amontonan" en torno al 8-9% de alcohol, y cómo los de calidad superior están por encima de 11%.
+
+*Nota:* No se realizan más análisis bivariantes exploratorios por las limitaciones de espacio de la práctica.
+
+## Creación de modelos
+
+Ya hemos sacado algunas informaciones útiles a través del análisis exploratorio visual (EDA). Pero ahora, para poder responder a la pregunta inicial, vamos a crear 3 modelos de los cuales esperamos poder obtener algún tipo de conclusión que nos ayude a tal fin.
+
+Pero antes hay que preparar los dataset a introducir al modelo.
+
+Lo primero es crear un conjunto de datos de entrenamiento con el que entrenar el modelo y otro de test con el que validaremos su bondad. No debe haber elementos compartidos entre ambos subconjuntos. Vamos a proceder diviendo el dataset pero de forma que respetemos la proporción de cada valor de la variable objetivo, *quality*, de manera estratificada. Así los datos de entrenamiento tendrán la misma proporción de datos según la calidad de los caldos.
+
+
+```{r}
+#creamos los conjuntos train y test estratificados por quality y dimensiones 2/3 
+#y 1/3 respectivamente
+train <- createDataPartition(y = df2$quality, p = 0.66, list = FALSE, times = 1)
+datos_train <- df2[train, ]
+datos_test  <- df2[-train, ]
+```
+
+
+
+Sacamos la variable objetivo de los subconjuntos, y ya estaremos listos para aplicarlos a los modelos que vamos a utilizar.
+
+```{r}
+
+target_train <- datos_train$quality
+target_test <- datos_test$quality
+
+datos_train <- select(datos_train, -quality)
+datos_test <- select(datos_test, -quality)
+
+levels(target_train)
+levels(target_test)
+dim(datos_train)
+dim(datos_test)
+```
+
+
+### Árbol de decisión
+
+Nuestro primer intento va a ser tratar de clasificar los datos con un árbol de decisión para tratar de discernir si hay algunas reglas ocultas en ello. Las ventajas de este modelo son su sencillez, la facilidad de interpretación de las reglas creadas y que no necesitan ningún tipo de transformación entre los datos de entrada (tan solo que la variable objetivo debe ser de tipo **factor**).
+
+Para generar un modelo sencillo, vamos a reducir el conjunto de atributos. De la exploración de los datos, correlaciones y gráficas, y del contenido de muchas etiquetas de vino, nos parecen interesantes los siguientes: 
+
+- alcohol
+- volatile.acidity
+- total.sulfur.dioxide
+- sulphates
+- density
+
+```{r}
+#convertimos la variable objetivo a tipo factor
+target_train <- as.factor(target_train)
+target_test <- as.factor(target_test)
+
+```
+```{r}
+#reducimos el conjunto de datos a los atributos citados
+datos_train_reducido <- select(datos_train, c(9, 1, 5, 8, 6))
+datos_test_reducido <- select(datos_test, c(9, 1, 5, 8, 6))
+```
+
+```{r}
+#construimos el modelo
+modelo.tree <- C50::C5.0(datos_train_reducido, target_train, rules = TRUE )
+modelo.tree
+```
+```{r}
+data_predicted <- predict(modelo.tree, datos_test_reducido)
+confusionMatrix(data = data_predicted, reference = target_test, positive = "yes")
+```
+
+A través del comando en R *summary (modelo.tree)* podemos ver las reglas que se han creado y que se podrían implementar para tratar de predecir la calidad de algún vino. 
+
+La precisión, contrastada contra el conjunto de pruebas, es del 60%. Reseñar también el valor de Kappa, métrica  que mide el porcentaje de aciertos más allá del que se podría conseguir haciendo predicciones meramente al azar. El modelo llega al 36%, lo cual deja bastante que desear.
+
+Por otro lado, de la matriz de confusión vemos que, en general, clasifica bastante bien, acumulando los errores en las categorías 5 y 6 que deben tener atributos muy parecidos.
+
+Podríamos continuar el proceso de mejora del árbol de decisión con otros atributos o con otros modelos basados en árboles de decisión, como RandomForest, pero con éstos no podríamos traducir el resultado a reglas sencillas ya que éste proviene del resultado de numerosos árboles. En cualquier caso, siempre podríamos tratar de predecir casos nuevos con el comando *predict* de R, y si la precisión fuera aceptable, podría ser de utilidad para los fines que se persiguen.
+
+### Random Forest
+
+Vamos a probar con Random Forest con  todos los datos de entrenamiento, es decir, con todos los atributos.
+
+```{r}
+modeloRF <- randomForest(target_train ~ ., data=datos_train, 
+                         importance=TRUE, proximity=TRUE)
+```
+
+```{r}
+predicted_model <- predict( modeloRF, datos_test, type="class" )
+print(sprintf("La precisión del árbol es: %.4f %%",
+              100*sum(predicted_model == target_test) / length(predicted_model)))
+```
+
+```{r}
+#data_predicted <- predict(modeloRF, datos_test)
+confusionMatrix(data = predicted_model, reference = target_test, positive = "yes")
+```
+
+Notamos una sensible mejoría. Alcanzamos una precisión del entorno del 66% y kappa rondando el 45%. Debemos indicar que kappa es un indicador menos optimista que la precisión.
+
+
+### Regresión logística
+
+Por último trataremos de explicar con un modelo de regresión logística la variabilidad del atributo objetivo, *quality*, que actuará como variable dependiente. Utilizaremos los 5 campos del árbol de decisión como variables explicativas y analizaremos los resultados. No podemos aplicar un modelo lineal múltiple ya que, aunque la variable dependiente es numérica, no se trata de un valor continuo, sino de un convenio o un orden de calidad, es decir, actúa como una variable cualitativa más que cuantitativa. Por ellos utilizaremos el modelo de regresión logística, diseñado para estos casos.
+
+Tenemos que hacer, previamente, una transformación en la variable dependiente porque esta debe tomar dos valores. En este sentido crearemos una nueva variable, *bueno*, que tomará el valor "malo" cuando quality es menor o igual que 7 y "bueno", para vinos con calidad superior.
+
+
+```{r}
+df2$bueno <- cut(df$quality, breaks = c(0, 7, 10),
+    labels = c("malo", "bueno"))
+df2$bueno <- as.factor(df2$bueno)
+```
+
+
+```{r}
+#generación del modelo de regresión logística
+modeloREG=glm(formula=bueno ~ alcohol + volatile.acidity + 
+              total.sulfur.dioxide + sulphates + density, data = df2, 
+              family=binomial(link=logit))
+summary(modeloREG)
+```
+
+Por los valores del p-value que arroja el modelo podemos concluir que *alcohol* y *sulphates* son variables significativas (Pr(>|z|) < 0.05), que aportan información relevante, mientras que los demás atributos no contribuyen sifnificativa a mejorar la calidad de los resultados. Podemos verlo a través de los *odd-ratios* que nos indican el grado de asociación entre las variables:
+
+```{r}
+#cálculo de los OR
+exp(modeloREG$coefficients)
+```
+*Alcohol* y *sulphates* tienes valores mayores que la unidad, lo que significa que actúan como factores de riesgos. Es decir, es más probable un aumento en probabilidad de que el vino sea "bueno" cuando aumentan los valores de estas variables.
+
+De todos modos, necesitamos saber si el modelo se ajusta bien a la variabilidad de los datos. Para ello utilizaremos el test de **Hosman-Lemenshow** que asume como hipótesis nula la inexistencia de diferencias entre los valores observados con los esperados.
+
+```{r}
+hoslem.test(df2$bueno,fitted(modeloREG))
+```
+Dado que el valor de p-value es menor que 0.05 podemos rechazar la hipótesis nula, lo que nos apunta a que hay diferencias sensibles entre lo que espera el modelo y los datos observados. Por tanto habrá que seguir afinando los parámetros del modelo.
+
+Otra manera de comprobar el resultado es a traves de la curva ROC que relaciona sensibilidad y 1-especificidad, de modo que, a mayor área bajo la gráfica, mejor precisión.
+
+```{r}
+prob=predict(modeloREG, df2, type="response")
+r=roc(df2$bueno,prob, data=df2)
+plot (r)
+```
+
+```{r}
+#area bajo la curva
+auc(r)
+```
+El modelo es bastante bueno ya que el área bajo la curva ROC es superior al 80%.
+
+
+## Conclusiones
+
+Tras el estudio de los datos hemos comprobado que existe una relación clara entre la cantidad de alcohol y los vinos recogidos en el dataset. Es la variable que más información aporta para explicar la variabilidad de los datos y aparece en todos los modelos con gran relevancia.
+
+En cuanto a los modelos utilizados, hemos conseguido afinar un modelo logístico que, si bien no es capaz de predecir la calidad de los vinos en la escala de 0 a 10 inicial, sí lo hace, con un buen nivel de precisión, para diferenciar vinos buenos de los de calidad mediana o inferior. Esto podría ser de utilidad y ofrecer una ventaja competitiva a los productores a la hora de "diseñar" sus vinos... otro estudio sería cómo conseguir la condiciones óptimas, cosa que ya queda en manos de biólogos y enólogos.
+
+<span style="color:darkblue">
+<style>
+table {
+  background-color: white !important;
+  color: darkblue !important;
+}
+</style>
+
+```{r,echo = FALSE}
+firma <- data.frame("Contribuciones" = c("Investigación previa","Redacción de las respuestas","Desarrollo código"),
+                    "Firma" = c("EJVT, FJAG","EJVT, FJAG","EJVT, FJAG"))
+knitr::kable(firma) 
+```
+</span>
+
+<!--Footer-->
+ <div style="background: #333333;padding: 35px 0px;margin-top: 25px;"><div class="row"><div class="col-sm-12"><img src="http://materials.cv.uoc.edu/cdocent/common/img/logo-uoc-bottom.png" alt="Logo UOC" class="img-responsive" style="margin: 0 auto; display: block;"></div></div></div>
+<!--/Footer-->
+
+
