@@ -11,6 +11,4 @@ Universitat Oberta of Catalunya.
 Consultor: Diego Pérez  
 # Dataset  
 https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009  
-
-# Licencia  
-El contenido de este proyecto esta licencia bajo la Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International, y el código fuente usado para mostrar este contenido esta licenciado bajo la MIT license.  
+  
