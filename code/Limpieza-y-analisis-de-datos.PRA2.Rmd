@@ -362,14 +362,14 @@ Podríamos continuar el proceso de mejora del árbol de decisión con otros atri
 Vamos a probar con Random Forest con  todos los datos de entrenamiento, es decir, con todos los atributos.
 
 ```{r}
-modeloRF <- randomForest(target_train ~ ., data=datos_train, 
-                         importance=TRUE, proximity=TRUE)
+modeloRF <- randomForest(target_train ~ ., data = datos_train, # nolint
+                         importance = TRUE, proximity = TRUE)
 ```
 
 ```{r}
-predicted_model <- predict( modeloRF, datos_test, type="class" )
+predicted_model <- predict( modeloRF, datos_test, type = "class")
 print(sprintf("La precisión del árbol es: %.4f %%",
-              100*sum(predicted_model == target_test) / length(predicted_model)))
+              100*sum(predicted_model == target_test) / length(predicted_model))) # nolint
 ```
 
 ```{r}
