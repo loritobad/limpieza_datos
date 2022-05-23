@@ -1,6 +1,6 @@
-# Wine Quality red (calidad de los vinos tintos).
+# Red Wine Quality (calidad de los vinos tintos).
 Estadisticas de los vinos tintos en base a 12 características de los mismos.  
-Francisco Javier Albarrán González.  
+Francisco Javier Albarrán González - fjalbarrang@uoc.edu -  
 Enrique Villalobos Torregrosa - kike_mto@hotmail.com -   
 
 # Acerca de este proyecto.
