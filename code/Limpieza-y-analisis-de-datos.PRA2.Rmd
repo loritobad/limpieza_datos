@@ -131,6 +131,15 @@ print(dim(df))
 str(df)
 ```
 
+Resumimos a continuación los datos para tener una mejor aproximación a ellos a través de sus datos estadísticos básicos, rangos, distribución o valores nulos.
+
+
+```{r}
+summary(df)
+```
+
+Todas las variables son cuantitativas y continuas a excepción de la variable *quality* que es discreta, con valores según un convenio/criterio, y que debemos considerar como cualitativa para los procesos siguientes.
+
 Una vez observada la naturaleza de los datos veamos si existen elementos vacíos que puedan afectar a los resultados del análisis posterior.  
 
 
@@ -143,7 +152,7 @@ cex.axis=.7, gap=3, ylab=c("Valores Pérdidos","Patrón"))
 ```
 
 
-Podemos apreciar que ninguna variable presenta valores faltantes (*NAs*). En cuanto a las variables con valores 0, observamos que la variable **citric.acid** es la única que tiene valores de 0. Tras las investigaciones efectuadas (https://uvadoc.uva.es/bitstream/handle/10324/41131/TFM-L492.pdf?sequence=1), se ha acordado que el valor 0 esta dentro del dominio del atributo.
+Podemos apreciar que ninguna variable presenta valores faltantes (*NAs*). En cuanto a las variables con valores 0, observamos que la variable **citric.acid** es la única que tiene valores de 0. Tras las investigaciones efectuadas en [uvadoc.uva.es](https://uvadoc.uva.es/bitstream/handle/10324/41131/TFM-L492.pdf?sequence=1), se ha acordado que el valor 0 esta dentro del dominio del atributo.
 
 ```{r}
 df_0 <- Filter(function(x) sum(x == 0) > 0, df)
@@ -163,6 +172,7 @@ ggplot(stack(df), aes(x = ind, y = values)) +
 
 
 Observamos que las variables han sido medidas en diferentes escalas lo que influye en la gráfica. Para corregir el efecto de la escala vamos a normalizar el conjunto de datos, escalando entre 0 y 1 todos los valores, pero respetando las distribuciones, y volver a graficarlo.
+
 ```{r}
 minMax <- function(x) {
   (x - min(x)) / (max(x) - min(x))
@@ -185,16 +195,59 @@ Pongamos un ejemplo. El *pH*.
 summary(df$pH)
 ```
 Investigando el dato, los valores aceptable para una calidad óptima, varían entre 3.1 y 3.9 
-(https://www.valtea.es/que-es-la-acidez-en-un-vino-y-que-importancia-tiene/#:~:text=La%20acidez%20total%20del%20vino,que%20su%20calidad%20sea%20%C3%B3ptima.). Sin embargo, entre los vinos en estudio, tenemos vinos con pésima calidad, por lo que es muy probable que su pH se encuentre también fuera de rango. No podemos considerar estos valores como anómalos por un proceso de captura de datos erroneo y eliminarlos sin perder información que puede ser útil a nivel de conjunto para identificar vinos de inferior calidad.
+[valtea.es](https://www.valtea.es/que-es-la-acidez-en-un-vino-y-que-importancia-tiene/#:~:text=La%20acidez%20total%20del%20vino,que%20su%20calidad%20sea%20%C3%B3ptima.). Sin embargo, entre los vinos en estudio, tenemos vinos con pésima calidad, por lo que es muy probable que su pH se encuentre también fuera de rango. No podemos considerar estos valores como anómalos por un proceso de captura de datos erroneo y eliminarlos sin perder información que puede ser útil a nivel de conjunto para identificar vinos de inferior calidad.
 
 El mismo razonamiento aplicamos al resto de atributos.
 
-El de recibo mencionar que lo mismo sucede con la variable target *quality*. Su distribución se centra en los valores medios, pero existen vinos excepcionales, con las puntuaciones más altas, que en ningún caso pueden ser considerados atípicos o *outliers* al uso. Por lo tanto, mantenemos en el dataset todos estos valores sin hacer tratamientos o borrados de los mismos, dada su posible relevancia en el resultado final.
+Es de recibo mencionar que lo mismo sucede con la variable target *quality*. Su distribución se centra en los valores medios, pero existen vinos excepcionales, con las puntuaciones más altas, que en ningún caso pueden ser considerados atípicos o *outliers* al uso. Por lo tanto, mantenemos en el dataset todos estos valores sin hacer tratamientos o borrados de los mismos, dada su posible relevancia en el resultado final.
 
+
+## Normalidad y homocedasticidad de los datos
+
+De manera visual vamos a proceder a examinar si los datos se acomodan a una distribución normal para poder elegir los estimadores oportunos en caso de necesitarlos para hacer **hipótesis de contraste**.
+
+```{r}
+par(mfrow=c(3,4))
+for(i in 1:ncol(df)) {
+  if (is.numeric(df[,i])){
+    qqnorm(df[,i],main = paste("Normal Q-Q ",colnames(df)[i]))
+    qqline(df[,i],col="red")
+    hist(df[,i],main=paste("Histogram ", colnames(df)[i]),xlab=colnames(df)[i],
+         freq =FALSE)
+  }
+}
+```
+
+
+En general parece que los datos siguen la normal, pero no tenemos una certeza plena si lo trasladamos a la población. Aplicaremos el text de normalidad de *Shapiro Wilk* para comprobarlo. Este test trabaja con la **hipótesis nula** de normalidad poblacional de los datos. En caso de que el p-value sea mayor a 0.05 (nivel de significancia estándar), se acepta dicha hipótesis.
+
+```{r}
+col.names = colnames(df)
+for(i in 1:ncol(df)) {
+  a <- shapiro.test(df[,i])
+  if (a[2] < 0.05){
+    print(paste("atributo ", col.names[i], "p-value", a[2]))
+    }
+  }
+```
+
+
+El resultado es demoledor. La población no sigue una distribución normal en ninguno de sus atributos. Si embargo, al tratarse de una muestra lo suficientemente grande, se puede asumir, por el **teorema del límite central** que siguen una distribución normal y trabajar bajo esta hipótesis.
+
+
+Puesto que los datos no siguen una Normal, tendremos que aplicar ahora, para comprobar la **homocedasticidad** de los datos, el text de *Fligner-Killeen*. Este test asume como hipótesis nula la igualdad de las varianzas.
+
+Lo haremos entre los datos sulphates y cantidad de alcohol (ambas continuas).
+
+```{r}
+fligner.test(alcohol ~ sulphates , data = df)
+```
+
+Puesto que el valor del p-value es inferior al nivel de confianza con el que se trabaja (0.05), tenemos que rechazar la hipótesis nula, asumiendo que tienen varianzas diferentes estos dos atributos.
 
 ## Análisis de los datos
 
-Vamos a comprobar el grado de correlación existente entre los datos para ver si podemos sacar alguna conclusión o simplificar la información del dataset que finalmente acabemos pasando a los algoritmos de minería que vayamos a utilizar.
+A pesar de los resultados anteriores, asumiendo la normalidad de la muestra, por el **teorema central del límite**, dado que cuenta con el número suficiente de instancias para poder asumirlo, vamos a comprobar el grado de correlación existente entre los datos para ver si podemos sacar alguna conclusión o simplificar la información del dataset que finalmente acabemos pasando a los algoritmos de minería que vayamos a utilizar.
 
 ```{r}
 
@@ -216,48 +269,6 @@ df2 <- df[, -eliminar]
 colnames(df2)
 ```
 
-### Normalidad y homocedasticidad de los datos
-
-De manera visual vamos a proceder a examinar si los datos se acomodan a una distribución normal para poder elegir los estimadores oportunos en caso de necesitarlos para hacer **hipótesis de contraste**.
-
-```{r}
-par(mfrow=c(3,4))
-for(i in 1:ncol(df2)) {
-  if (is.numeric(df2[,i])){
-    qqnorm(df2[,i],main = paste("Normal Q-Q ",colnames(df2)[i]))
-    qqline(df2[,i],col="red")
-    hist(df2[,i],main=paste("Histogram ", colnames(df2)[i]),xlab=colnames(df2)[i],
-         freq =FALSE)
-  }
-}
-```
-
-
-En general parece que los datos siguen la normal, pero no tenemos una certeza plena si lo trasladamos a la población. Aplicaremos el text de normalidad de *Shapiro Wilk* para comprobarlo. Este test trabaja con la **hipótesis nula** de normalidad poblacional de los datos. En caso de que el p-value sea mayor a 0.05 (nivel de significancia estándar), se acepta dicha hipótesis.
-
-```{r}
-col.names = colnames(df2)
-for(i in 1:ncol(df2)) {
-  a <- shapiro.test(df2[,i])
-  if (a[2] < 0.05){
-    print(paste("atributo ", col.names[i], "p-value", a[2]))
-    }
-  }
-```
-
-
-El resultado es demoledor. Ningún dato sigue una distribución normal. Si embargo, al tratarse de una muestra lo suficientemente grande, se puede asumir, por el *teorma del límite central* que siguen una distribución normal.
-
-
-Puesto que los datos no siguen una Normal, tendremos que aplicar ahora, para comprobar la **homocedasticidad** de los datos, el text de *Fligner-Killeen*. Este test asume como hipótesis nula la igualdad de las varianzas.
-
-Lo haremos entre los datos calidad (nuestra variable "target") y cantidad de alcochol, que habíamos visto que tienen un grado medio de correlación.
-
-```{r}
-fligner.test(quality ~ alcohol, data = df2)
-```
-
-Tenemos que rechazar la hipótesis nula, asumiendo que tienen varianzas diferentes estos dos atributos.
 
 ## Análisis bivariante (frente a variable objetivo) de algún atributo
 
@@ -279,13 +290,27 @@ Apreciamos como los vinos con calidad inferior se "amontonan" en torno al 8-9% d
 
 *Nota:* No se realizan más análisis bivariantes exploratorios por las limitaciones de espacio de la práctica.
 
+
+## Selección de atributos
+
+Ya hemos sacado algunas informaciones útiles a través del análisis exploratorio visual (EDA) y eliminado algún atributo. Pero ahora, para poder responder a la pregunta inicial, vamos a crear 3 modelos de los cuales esperamos poder obtener algún tipo de conclusión que nos ayude a tal fin.
+
+
+De la exploración de los datos, correlaciones y gráficas, y del contenido de muchas etiquetas de vino, nos parecen interesantes los siguientes atributos:
+
+- alcohol
+- volatile.acidity
+- total.sulfur.dioxide
+- sulphates
+- density
+
+Estas características serán las que a priori utilizaremos en nuestro primer modelo y que, a tenor de los resultados, iremos enriqueciendo mediante la adición de nuevos atributos, de forma que si los resultados no son óptimos, podremos incluir todos los atributos ya que de alguna manera, seguramente influyen en la calidad del vino.
+
 ## Creación de modelos
 
-Ya hemos sacado algunas informaciones útiles a través del análisis exploratorio visual (EDA). Pero ahora, para poder responder a la pregunta inicial, vamos a crear 3 modelos de los cuales esperamos poder obtener algún tipo de conclusión que nos ayude a tal fin.
+Antes de aplicar modelos hay que preparar los dataset a introducir al modelo, que inicialmente incluirán los atributos antes señalados.
 
-Pero antes hay que preparar los dataset a introducir al modelo.
-
-Lo primero es crear un conjunto de datos de entrenamiento con el que entrenar el modelo y otro de test con el que validaremos su bondad. No debe haber elementos compartidos entre ambos subconjuntos. Vamos a proceder diviendo el dataset pero de forma que respetemos la proporción de cada valor de la variable objetivo, *quality*, de manera estratificada. Así los datos de entrenamiento tendrán la misma proporción de datos según la calidad de los caldos.
+También crearemos un conjunto de datos de entrenamiento con el que entrenar el modelo, y otro de test con el que validaremos su bondad. No debe haber elementos compartidos entre ambos subconjuntos. Vamos a proceder diviendo el dataset pero de forma que respetemos la proporción de cada valor de la variable objetivo, *quality*, de manera estratificada. Así los datos de entrenamiento tendrán la misma proporción de datos según la calidad de los caldos.
 
 
 ```{r}
@@ -295,7 +320,6 @@ train <- createDataPartition(y = df2$quality, p = 0.66, list = FALSE, times = 1)
 datos_train <- df2[train, ]
 datos_test  <- df2[-train, ]
 ```
-
 
 
 Sacamos la variable objetivo de los subconjuntos, y ya estaremos listos para aplicarlos a los modelos que vamos a utilizar.
@@ -319,7 +343,7 @@ dim(datos_test)
 
 Nuestro primer intento va a ser tratar de clasificar los datos con un árbol de decisión para tratar de discernir si hay algunas reglas ocultas en ello. Las ventajas de este modelo son su sencillez, la facilidad de interpretación de las reglas creadas y que no necesitan ningún tipo de transformación entre los datos de entrada (tan solo que la variable objetivo debe ser de tipo **factor**).
 
-Para generar un modelo sencillo, vamos a reducir el conjunto de atributos. De la exploración de los datos, correlaciones y gráficas, y del contenido de muchas etiquetas de vino, nos parecen interesantes los siguientes: 
+Para generar un modelo sencillo, vamos a reducir el conjunto de atributos de la manera anteriormente expuesta. Los enumeramos de nuevo: 
 
 - alcohol
 - volatile.acidity
@@ -333,11 +357,14 @@ target_train <- as.factor(target_train)
 target_test <- as.factor(target_test)
 
 ```
+
+
 ```{r}
 #reducimos el conjunto de datos a los atributos citados
 datos_train_reducido <- select(datos_train, c(9, 1, 5, 8, 6))
 datos_test_reducido <- select(datos_test, c(9, 1, 5, 8, 6))
 ```
+
 
 ```{r}
 #construimos el modelo
@@ -345,39 +372,43 @@ modelo.tree <- C50::C5.0(datos_train_reducido, target_train, rules = TRUE )
 modelo.tree
 ```
 ```{r}
+#validamos el modelo
 data_predicted <- predict(modelo.tree, datos_test_reducido)
 confusionMatrix(data = data_predicted, reference = target_test, positive = "yes")
 ```
 
 A través del comando en R *summary (modelo.tree)* podemos ver las reglas que se han creado y que se podrían implementar para tratar de predecir la calidad de algún vino. 
 
-La precisión, contrastada contra el conjunto de pruebas, es del 60%. Reseñar también el valor de Kappa, métrica  que mide el porcentaje de aciertos más allá del que se podría conseguir haciendo predicciones meramente al azar. El modelo llega al 36%, lo cual deja bastante que desear.
+La precisión, contrastada contra el conjunto de pruebas, están en el entorno del 60%. Reseñar también el valor de Kappa, métrica  que mide el porcentaje de aciertos más allá del que se podría conseguir haciendo predicciones meramente al azar. El modelo llega al 34%, lo cual deja bastante que desear.
 
 Por otro lado, de la matriz de confusión vemos que, en general, clasifica bastante bien, acumulando los errores en las categorías 5 y 6 que deben tener atributos muy parecidos.
 
 Podríamos continuar el proceso de mejora del árbol de decisión con otros atributos o con otros modelos basados en árboles de decisión, como RandomForest, pero con éstos no podríamos traducir el resultado a reglas sencillas ya que éste proviene del resultado de numerosos árboles. En cualquier caso, siempre podríamos tratar de predecir casos nuevos con el comando *predict* de R, y si la precisión fuera aceptable, podría ser de utilidad para los fines que se persiguen.
+
 
 ### Random Forest
 
 Vamos a probar con Random Forest con  todos los datos de entrenamiento, es decir, con todos los atributos.
 
 ```{r}
-modeloRF <- randomForest(target_train ~ ., data = datos_train, # nolint
-                         importance = TRUE, proximity = TRUE)
+modeloRF <- randomForest(target_train ~ ., data=datos_train, 
+                         importance=TRUE, proximity=TRUE)
 ```
 
+
 ```{r}
-predicted_model <- predict( modeloRF, datos_test, type = "class")
+predicted_model <- predict( modeloRF, datos_test, type="class" )
 print(sprintf("La precisión del árbol es: %.4f %%",
-              100*sum(predicted_model == target_test) / length(predicted_model))) # nolint
+              100*sum(predicted_model == target_test) / length(predicted_model)))
 ```
+
 
 ```{r}
 #data_predicted <- predict(modeloRF, datos_test)
 confusionMatrix(data = predicted_model, reference = target_test, positive = "yes")
 ```
 
-Notamos una sensible mejoría. Alcanzamos una precisión del entorno del 66% y kappa rondando el 45%. Debemos indicar que kappa es un indicador menos optimista que la precisión.
+Notamos una sensible mejoría. Alcanzamos una precisión del entorno del 70% y kappa rondando el 51%. Debemos indicar que kappa es un indicador menos optimista que la precisión.
 
 
 ### Regresión logística
